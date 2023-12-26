@@ -1,6 +1,7 @@
 "use client"
 
 import { Inter, Manrope, Raleway } from 'next/font/google';
+import LoginPage from './components/login';
 
 const raleway = Raleway({
   weight: ['400', '500', '600', '700', '800'],
@@ -19,6 +20,7 @@ export default function Home() {
   return (
     <div>
       <h1 className={`${raleway.className} text-2xl`}>hehe</h1>
+      <LoginPage></LoginPage>
     </div>
 
   )
