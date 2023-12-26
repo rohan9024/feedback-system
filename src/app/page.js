@@ -18,7 +18,7 @@ export default function Home() {
 
   return (
     <div>
-      <h1 className={`${raleway.className} text-2xl`}>heloooooo</h1>
+      <h1 className={`${raleway.className} text-2xl`}>hehe</h1>
     </div>
 
   )
