@@ -64,7 +64,7 @@ function Left() {
                 </div>
 
                 <div className='flex flex-col justify-center space-y-8 mt-2'>
-                    <Link href="/admin-page" >
+                    <Link href="/adminpage" >
                         <div className='hover:cursor-pointer'>
                             <h1>Home</h1>
                         </div>
