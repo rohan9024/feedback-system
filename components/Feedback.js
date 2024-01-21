@@ -106,8 +106,6 @@ function Feedback({ fullName, feedbackName, PRN, feedbackId }) {
                     <h1 className='text-4xl font-bold'>{feedbackName}</h1>
                     <h1 className='text-xl'>Welcome, {fullName} !</h1>
                     <h1 className='text-xl'>Your PRN Number is: {PRN} !</h1>
-
-
                 </header>
             </div>
 

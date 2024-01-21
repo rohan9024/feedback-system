@@ -29,8 +29,8 @@ function Signup() {
     const [semester, setSemester] = useState("")
     const [division, setDivision] = useState("")
     const [batch, setBatch] = useState("")
-    const [year, setYear] = useState("FE")
     const [password, setPassword] = useState("")
+    const [year, setYear] = useState("FE")
     const router = useRouter();
 
     const departmentList = [
@@ -43,6 +43,13 @@ function Signup() {
         "IOT",
         "Artificial Intelligence and Data science",
         "Artificial Intelligence and Machine Learning",
+    ]
+    const optionalSubjectList = [
+        "Internet of Things",
+        "Digital Signal & Image Processing ",
+        "Quantitative Analysis",
+        "Probablistic Graphical Models",
+        "Internet Programming"
     ]
     const semesterList = [
         "Semester 1",
@@ -97,7 +104,7 @@ function Signup() {
                     year: year,
                     password: password,
                     completed: "false",
-                    optionalSubject: optionalSubject
+                    optionalSubject: optionalSubject ? optionalSubject : ''
                 });
                 notifySuccess('Created User successfully');
                 setFullName('');
@@ -129,22 +136,9 @@ function Signup() {
     const handleSemesterDropdown = (event) => {
         setSemester(event.target.value);
     };
-    const handleSubjectDropdown = (event) => {
+    const handleOptionalSubjectDropdown = (event) => {
         setOptionalSubject(event.target.value);
     };
-
-    const optionalSubjectList = [
-        "Data Warehousing and Mining",
-        "Computer Network",
-        "Software Engineering",
-        "Theoretical Computer Science",
-        "Internet Programming",
-        "Probablistic Graphical Models",
-        "Professional Communication Ethics"
-    ]
-
-
-
 
 
 
@@ -263,7 +257,7 @@ function Signup() {
                                 <div className='flex justify-center items-center '>
                                     <select
                                         value={optionalSubject}
-                                        onChange={handleSubjectDropdown}
+                                        onChange={handleOptionalSubjectDropdown}
                                         className="block w-52 lg:w-96 py-2 px-5 leading-tight border border-gray-700 focus:outline-none cursor-pointer"
                                     >
                                         {optionalSubjectList.map((subject, index) => (

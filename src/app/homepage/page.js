@@ -45,15 +45,15 @@ function page() {
                 collection(db, "users"),
                 where("email", "==", userEmail),
             );
-
+    
             try {
                 const querySnapshot = await getDocs(q);
-
+    
                 if (querySnapshot.empty) {
                     alert("Not Found");
                 } else {
                     var fetchUserDetails = [];
-                    querySnapshot.forEach((doc) => (
+                    querySnapshot.forEach((doc) => {
                         fetchUserDetails.push({
                             id: doc.id,
                             fullName: doc.data().fullName,
@@ -63,10 +63,13 @@ function page() {
                             semester: doc.data().semester,
                             batch: doc.data().batch,
                             year: doc.data().year,
-                            completed: doc.data().completed
-                        })
-                    ));
-
+                            completed: doc.data().completed,
+                            optionalSubject: doc.data().optionalSubject
+                        });
+    
+                  
+                    });
+    
                     setUserObj(fetchUserDetails);
                     setFetch(true);
                 }
@@ -74,11 +77,12 @@ function page() {
                 console.error("Error fetching user:", error);
             }
         };
-
+    
         if (!fetch) {
             fetchUser();
         }
-    }, [fetch, db]);
+    }, [fetch, db, userEmail]);
+    
 
 
 

@@ -42,19 +42,6 @@ function Left() {
                     <div className='mt-2 mr-4 hover:cursor-pointer' onClick={()=> router.push('/generate-feedback')}>
                         <img src="./feedback.png" alt="feedback" className='w-6 h-6 object-contain' />
                     </div>
-
-                    <div className='mt-2 mr-4 hover:cursor-pointer'>
-                        <img src="./results.png" alt="results" className='w-6 h-6 object-contain' />
-                    </div>
-                    <div className='mt-2 mr-4 hover:cursor-pointer'>
-                        <img src="./timetable.png" alt="timetable" className='w-6 h-6 object-contain' />
-                    </div>
-                    <div className='mt-2 mr-4 hover:cursor-pointer'>
-                        <img src="./hall-tickets.png" alt="hall-tickets" className='w-6 h-6 object-contain' />
-                    </div>
-                    <div className='mt-2 mr-4 hover:cursor-pointer'>
-                        <img src="./hall-tickets.png" alt="hall-tickets" className='w-6 h-6 object-contain' />
-                    </div>
                     <div className='mt-2 mr-4 hover:cursor-pointer'>
                         <img src="./settings.png" alt="Settings" className='w-6 h-6 object-contain' />
                     </div>
@@ -79,27 +66,7 @@ function Left() {
                             <h1>Generate Feedback</h1>
                         </div>
                     </Link>
-                    <Link href="/create-results" >
-                        <div className='hover:cursor-pointer'>
-                            <h1>Results</h1>
-                        </div>
-                    </Link>
-                    <Link href="/create-exam-timetable" >
-                        <div className='hover:cursor-pointer'>
-                            <h1>Exam Timetable</h1>
-                        </div>
-                    </Link>
-                    <Link href="/create-hall-tickets" >
-                        <div className='hover:cursor-pointer'>
-                            <h1>Hall Tickets</h1>
-                        </div>
-                    </Link>
-                    <Link href="/create-hall-tickets-beta" >
-                        <div className='hover:cursor-pointer'>
-                            <h1>Hall Tickets (Beta)</h1>
-                        </div>
-                    </Link>
-                    <Link href="/settings" >
+                    <Link href="/admin-settings" >
                         <div className='hover:cursor-pointer'>
                             <h1>Settings</h1>
                         </div>

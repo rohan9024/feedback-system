@@ -61,7 +61,8 @@ function page({ params }) {
                             batch: doc.data().batch,
                             year: doc.data().year,
                             division: doc.data().division,
-                            completed: doc.data().completed
+                            completed: doc.data().completed,
+                            optionalSubject: doc.data().optionalSubject
                         })
                     ));
 
@@ -95,7 +96,6 @@ function page({ params }) {
             <Feedback feedbackName={feedbackName} fullName={fullName} PRN={PRN} feedbackId={feedbackId} department={department} />
             {userObj.map((user) => (
                 user.completed === "false" && <Forms user={user} feedbackId={feedbackId} />
-
             ))}
 
         </>

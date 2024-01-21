@@ -16,7 +16,6 @@ const manrope = Manrope({
 });
 
 const Forms = ({ feedbackId, user }) => {
-  let teacherCount = 1;
   const [fetch, setFetch] = useState(false)
   const [subjects, setSubjects] = useState([])
   const [one, setOne] = useState(0);
@@ -24,14 +23,17 @@ const Forms = ({ feedbackId, user }) => {
   const [three, setThree] = useState(0);
   const [four, setFour] = useState(0);
   const [five, setFive] = useState(0);
+  const [totalSubjectCount, setTotalSubjectCount] = useState(0);
+  const [submissionTrack, setSubmissionTrack] = useState(0);
   const [submissionStatus, setSubmissionStatus] = useState({});
-
-
+  const [practicalSubmissionStatus, setPracticalSubmissionStatus] = useState({});
+  var subjectCount = 1;
   var isUser = ''
   var userEmail = ''
   const router = useRouter();
 
-  
+
+  const [optionalTeachersObj, setOptionalTeachersObj] = useState([])
   const [practicalTeachersObj, setPracticalTeachersObj] = useState([])
   const [theoryTeachersObj, setTheoryTeachersObj] = useState([])
 
@@ -87,7 +89,6 @@ const Forms = ({ feedbackId, user }) => {
     "Computer Network",
     "Software Engineering",
     "Theoretical Computer Science",
-    "Internet Programming",
     "PCE",
   ]
 
@@ -101,7 +102,7 @@ const Forms = ({ feedbackId, user }) => {
       });
 
     } catch (error) {
-      alert(error);
+      console.log(error);
     }
 
     try {
@@ -112,7 +113,7 @@ const Forms = ({ feedbackId, user }) => {
       notifySuccess('Submitted Feedback successfully');
       router.push('/homepage');
     } catch (error) {
-      alert(error);
+      console.log(error);
     }
   }
 
@@ -150,15 +151,14 @@ const Forms = ({ feedbackId, user }) => {
     if (querySnapshot.empty) {
       notifyError();
     } else {
-      notifySuccess();
       const docRef = doc(db, "details", querySnapshot.docs[0].id);
 
       await updateDoc(docRef, {
-        one: one,
-        two: two,
-        three: three,
-        four: four,
-        five: five,
+        one: increment(one),
+        two: increment(two),
+        three: increment(three),
+        four: increment(four),
+        five: increment(five),
       });
       setOne(0)
       setTwo(0)
@@ -166,6 +166,9 @@ const Forms = ({ feedbackId, user }) => {
       setFour(0)
       setFive(0)
       setSubmissionStatus((prevStatus) => ({ ...prevStatus, [subject]: true }));
+      setSubmissionTrack((count) => count + 1)
+      notifySuccess();
+
     }
   }
   async function updatePracticalSubject(one, two, three, four, five, subject) {
@@ -182,22 +185,60 @@ const Forms = ({ feedbackId, user }) => {
     if (querySnapshot.empty) {
       notifyError();
     } else {
-      notifySuccess();
       const docRef = doc(db, "details", querySnapshot.docs[0].id);
 
       await updateDoc(docRef, {
-        one: one,
-        two: two,
-        three: three,
-        four: four,
-        five: five,
+        one: increment(one),
+        two: increment(two),
+        three: increment(three),
+        four: increment(four),
+        five: increment(five),
       });
       setOne(0)
       setTwo(0)
       setThree(0)
       setFour(0)
       setFive(0)
+      setPracticalSubmissionStatus((prevStatus) => ({ ...prevStatus, [subject]: true }));
+      setSubmissionTrack((count) => count + 1)
+
+      notifySuccess();
+
+    }
+  }
+  async function updateOptionalSubject(one, two, three, four, five, subject) {
+
+    const q = query(
+      collection(db, "optionalSubjects"),
+      where("subject", "==", subject),
+      where("department", "==", user.department),
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      notifyError();
+    } else {
+      const docRef = doc(db, "optionalSubjects", querySnapshot.docs[0].id);
+
+      await updateDoc(docRef, {
+        one: increment(one),
+        two: increment(two),
+        three: increment(three),
+        four: increment(four),
+        five: increment(five),
+      });
+      setOne(0)
+      setTwo(0)
+      setThree(0)
+      setFour(0)
+      setFive(0)
+
       setSubmissionStatus((prevStatus) => ({ ...prevStatus, [subject]: true }));
+      setSubmissionTrack((count) => count + 1)
+
+      notifySuccess();
+
     }
   }
 
@@ -231,12 +272,50 @@ const Forms = ({ feedbackId, user }) => {
           setFetch(true);
         }
       } catch (error) {
-        alert(error);
+        console.log(error);
       }
     };
 
     if (!fetch) {
       fetchPracticalTeachers();
+    }
+  }, [fetch, db]);
+
+
+  useEffect(() => {
+    const fetchOptionalTeachers = async () => {
+      const q = query(
+        collection(db, "optionalSubjects"),
+        where("department", "==", user.department),
+        where("semester", "==", user.semester),
+        where("subject", "==", user.optionalSubject),
+      );
+
+      try {
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          alert("Not Found");
+        } else {
+          var optionalTeacherDetails = [];
+          querySnapshot.forEach((doc) => (
+            optionalTeacherDetails.push({
+              id: doc.id,
+              teacher: doc.data().teacher,
+              subject: doc.data().subject
+            })
+          ));
+
+          setOptionalTeachersObj(optionalTeacherDetails);
+          setFetch(true);
+        }
+      } catch (error) {
+        alert(error);
+      }
+    };
+
+    if (!fetch) {
+      fetchOptionalTeachers();
     }
   }, [fetch, db]);
 
@@ -267,10 +346,11 @@ const Forms = ({ feedbackId, user }) => {
           ));
 
           setTheoryTeachersObj(theoryTeacherDetails);
+          setTotalSubjectCount((count) => theoryTeacherDetails.length + count)
           setFetch(true);
         }
       } catch (error) {
-        alert(error);
+        console.log(error);
       }
     };
 
@@ -333,7 +413,8 @@ const Forms = ({ feedbackId, user }) => {
             theoryTeachersObj.map((teacher, index) => (
               (
                 <>
-                  <h1 className='font-semibold'>Subject: {teacher.subject}</h1>
+
+                  <h1 className='font-semibold flex'><h1 className='mr-3'>{subjectCount++}.</h1>{teacher.subject}</h1>
                   <h1 className='font-semibold'>Teacher: {teacher.teacher}</h1>
                   <table className="w-full mt-4">
                     <tbody>
@@ -376,7 +457,48 @@ const Forms = ({ feedbackId, user }) => {
             practicalTeachersObj.map((teacher, index) => (
               (
                 <>
-                  <h1 className='font-semibold'>Subject: {teacher.subject}</h1>
+                  <h1 className='font-semibold flex'><h1 className='mr-3'>{subjectCount++}.</h1>{teacher.subject}</h1>
+                  <h1 className='font-semibold'>Teacher: {teacher.teacher}</h1>
+                  <table className="w-full mt-4">
+                    <tbody>
+                      {feedbackQuestions.map((question, index) => (
+                        <tr key={index}>
+                          <td className="py-2">
+                            <label className="block text-sm font-medium text-gray-600">{question}</label>
+                          </td>
+                          <td className="py-2">
+                            <div className="flex items-center space-x-8">
+                              {[1, 2, 3, 4, 5].map(option => (
+                                <React.Fragment key={option}>
+                                  <input type="radio" value={option} onChange={() => handleRadio(index, option)} className='w-5 h-5' name={index} />
+                                  <label className="text-center">{option}</label>
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="flex items-center justify-center my-6">
+                    <button
+                      id={teacher.subject}
+                      disabled={practicalSubmissionStatus[teacher.subject]}
+                      onClick={() => updatePracticalSubject(one, two, three, four, five, teacher.subject)}
+                      className="bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300"
+                    >
+                      Submit Feedback
+                    </button>
+                  </div>
+                </>
+              )))
+          }
+          <h2 className="text-3xl font-bold my-10 text-center">Optional Subjects</h2>
+          {
+            optionalTeachersObj.map((teacher, index) => (
+              (
+                <>
+                  <h1 className='font-semibold flex'><h1 className='mr-3'>{subjectCount++}.</h1>{teacher.subject}</h1>
                   <h1 className='font-semibold'>Teacher: {teacher.teacher}</h1>
                   <table className="w-full mt-4">
                     <tbody>
@@ -404,7 +526,7 @@ const Forms = ({ feedbackId, user }) => {
                     <button
                       id={teacher.subject}
                       disabled={submissionStatus[teacher.subject]}
-                      onClick={() => updatePracticalSubject(one, two, three, four, five, teacher.subject)}
+                      onClick={() => updateOptionalSubject(one, two, three, four, five, teacher.subject)}
                       className="bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300"
                     >
                       Submit Feedback
@@ -416,19 +538,22 @@ const Forms = ({ feedbackId, user }) => {
 
 
 
+          {
+            submissionTrack === subjectCount - 1 && (
+              <div className='flex justify-center items-center'>
+                <div
+                  onClick={updateFeedback}
+                  type="submit" class="my-20 cursor-pointer w-96 relative inline-flex items-center px-12 py-2 overflow-hidden text-lg font-medium text-black border-2 border-black rounded-full hover:text-white group hover:bg-gray-600">
+                  <span class="absolute left-0 block w-full h-0 transition-all bg-black opacity-100 group-hover:h-full top-1/2 group-hover:top-0 duration-400 ease"></span>
+                  <span class="absolute right-0 flex items-center justify-start w-10 h-10 duration-300 transform translate-x-full group-hover:translate-x-0 ease">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                  </span>
+                  <span class="relative">Done</span>
+                </div>
+              </div>
+            )
+          }
 
-          <div className='flex justify-center items-center'>
-
-            <div
-              onClick={updateFeedback}
-              type="submit" class="my-20 cursor-pointer w-96 relative inline-flex items-center px-12 py-2 overflow-hidden text-lg font-medium text-black border-2 border-black rounded-full hover:text-white group hover:bg-gray-600">
-              <span class="absolute left-0 block w-full h-0 transition-all bg-black opacity-100 group-hover:h-full top-1/2 group-hover:top-0 duration-400 ease"></span>
-              <span class="absolute right-0 flex items-center justify-start w-10 h-10 duration-300 transform translate-x-full group-hover:translate-x-0 ease">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-              </span>
-              <span class="relative">Done</span>
-            </div>
-          </div>
 
         </div>
 

@@ -25,6 +25,7 @@ const manrope = Manrope({
 function AllocateTeachers() {
     const [theoryObj, setTheoryObj] = useState([])
     const [practicalObj, setPracticalObj] = useState([])
+    const [optionalObj, setOptionalObj] = useState([])
     const [fetch, setFetch] = useState(false)
 
 
@@ -202,6 +203,32 @@ function AllocateTeachers() {
         }
     }, [fetch]);
 
+    // Fetch optional teachers
+    useEffect(() => {
+        if (!fetch) {
+            const fetchedOptionalTeachers = async () => {
+                const querySnapshot = await getDocs(collection(db, "optionalSubjects"));
+                const fetchedTeachers = [];
+
+                querySnapshot.forEach((doc) => {
+                    fetchedTeachers.push({
+                        id: doc.id,
+                        department: doc.data().department,
+                        division: doc.data().division,
+                        semester: doc.data().semester,
+                        subject: doc.data().subject,
+                        teacher: doc.data().teacher,
+                    });
+                });
+
+                setOptionalObj(fetchedTeachers);
+                setFetch(true);
+            }
+
+            fetchedOptionalTeachers();
+        }
+    }, [fetch]);
+
 
     async function createTheoryAllocation() {
         try {
@@ -247,6 +274,26 @@ function AllocateTeachers() {
             notifyError('Something went wrong');
         }
     }
+    async function createOptionalAllocation() {
+        try {
+            await addDoc(collection(db, 'optionalSubjects'), {
+                department: department,
+                semester: semester,
+                subject: subject,
+                teacher: teacher,
+                division: division,
+                one: 0,
+                two: 0,
+                three: 0,
+                four: 0,
+                five: 0
+            });
+            notifySuccess('Created Allocation successfully');
+            setFetch(false);
+        } catch (error) {
+            notifyError('Something went wrong');
+        }
+    }
 
     return (
         <>
@@ -265,12 +312,12 @@ function AllocateTeachers() {
             <div className='w-screen  flex mx-20 my-20'>
                 <div className='flex flex-col'>
 
-                    <motion.div className='flex  justify-center items-center cursor-pointer border border-gray-300 rounded-2xl w-[800px]'>
+                    <motion.div className='flex  justify-center items-center cursor-pointer border border-gray-300 rounded-2xl w-[1000px]'>
                         <motion.div
                             className={`${modeOption === 'Theory'
                                 ? 'bg-blue-600 border-blue-600 text-white'
                                 : 'bg-none'
-                                } flex justify-center items-center  px-32 py-2 rounded-2xl w-full`}
+                                } flex justify-center items-center  px-20 py-2 rounded-2xl w-full`}
                             onClick={() => setModeOption('Theory')}
                             whileHover={{ scale: 1.1 }} // Add animation on hover
                             transition={{ type: 'linear', stiffness: 300 }}
@@ -281,12 +328,23 @@ function AllocateTeachers() {
                             className={`${modeOption === 'Practical'
                                 ? 'bg-blue-600 border-blue-600 text-white'
                                 : 'bg-none'
-                                } flex justify-center items-center px-32 py-2 rounded-2xl w-full`}
+                                } flex justify-center items-center px-20 py-2 rounded-2xl w-full`}
                             onClick={() => setModeOption('Practical')}
                             whileHover={{ scale: 1.1 }} // Add animation on hover
                             transition={{ type: 'linear', stiffness: 300 }}
                         >
                             <h1 className={`${manrope.className} text-xl`}>Practical</h1>
+                        </motion.div>
+                        <motion.div
+                            className={`${modeOption === 'optionalSubject'
+                                ? 'bg-blue-600 border-blue-600 text-white'
+                                : 'bg-none'
+                                } flex justify-center items-center px-20 py-2 rounded-2xl w-full`}
+                            onClick={() => setModeOption('optionalSubject')}
+                            whileHover={{ scale: 1.1 }} // Add animation on hover
+                            transition={{ type: 'linear', stiffness: 300 }}
+                        >
+                            <h1 className={`${manrope.className} text-xl`}>Optional Subject</h1>
                         </motion.div>
                     </motion.div>
                     <div className='flex flex-col space-y-5 mb-20'>
@@ -386,7 +444,7 @@ function AllocateTeachers() {
 
 
                             <div
-                                onClick={modeOption === "Theory" ? createTheoryAllocation : '' || modeOption === "Practical" ? createPracticalAllocation : ''}
+                                onClick={modeOption === "Theory" ? createTheoryAllocation : '' || modeOption === "Practical" ? createPracticalAllocation : '' ||  modeOption === "optionalSubject" ? createOptionalAllocation : ''}
                                 type="submit" class=" cursor-pointer w-96 relative inline-flex items-center px-12 py-2 overflow-hidden text-lg font-medium text-black border-2 border-black rounded-full hover:text-white group hover:bg-gray-600">
                                 <span class="absolute left-0 block w-full h-0 transition-all bg-black opacity-100 group-hover:h-full top-1/2 group-hover:top-0 duration-400 ease"></span>
                                 <span class="absolute right-0 flex items-center justify-start w-10 h-10 duration-300 transform translate-x-full group-hover:translate-x-0 ease">
@@ -398,7 +456,7 @@ function AllocateTeachers() {
                     </div>
 
 
-                    <SubjectAllocation theoryObj={theoryObj} practicalObj={practicalObj} />
+                    <SubjectAllocation theoryObj={theoryObj} practicalObj={practicalObj} optionalObj={optionalObj} />
 
 
 
