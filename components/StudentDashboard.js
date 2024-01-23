@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, doc, getDocs, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Manrope, Raleway } from 'next/font/google';
 
@@ -55,6 +55,21 @@ function StudentDashboard({ userObj }) {
     }
   }, [fetch]);
 
+  async function registerUser() {
+    try {
+        const updateUser = userObj.map(async (user) => {
+            const docRef = doc(db, "users", user.id);
+            await updateDoc(docRef, {
+                completed: "true",
+            });
+        });
+
+        await Promise.all(updateUser);
+
+    } catch (error) {
+        alert(error);
+    }
+}
 
 
   return (
@@ -76,6 +91,7 @@ function StudentDashboard({ userObj }) {
                 user.completed === "false" ? (<div className="card total-feedback bg-purple-400 border border-gray-300 p-12 text-center rounded">
                   <Link
                     key={feedback}
+                    onClick={registerUser}
                     href={{
                       pathname: `/homepage/${feedback.name}`,
                       query: { feedbackId: feedback.id, feedback: feedback.name, fullName: user.fullName, PRN: user.PRN, department: user.department },

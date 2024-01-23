@@ -95,7 +95,8 @@ function page({ params }) {
             />
             <Feedback feedbackName={feedbackName} fullName={fullName} PRN={PRN} feedbackId={feedbackId} department={department} />
             {userObj.map((user) => (
-                user.completed === "false" && <Forms user={user} feedbackId={feedbackId} />
+                // user.completed === "false" && <Forms user={user} feedbackId={feedbackId} />
+                <Forms user={user} feedbackId={feedbackId} />
             ))}
 
         </>
