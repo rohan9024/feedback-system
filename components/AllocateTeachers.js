@@ -11,7 +11,9 @@ import { useRouter } from 'next/navigation';
 import { AuthContext } from '../contexts/AuthContext';
 import SubjectAllocation from "./SubjectAllocation"
 import { motion } from "framer-motion"
-
+import { useQuery } from 'react-query';
+import Papa from 'papaparse';
+import CsvExport from "../CSVExport"
 
 const raleway = Raleway({
     weight: ['400', '700'],
@@ -23,9 +25,12 @@ const manrope = Manrope({
 });
 
 function AllocateTeachers() {
+
+
     const [theoryObj, setTheoryObj] = useState([])
     const [practicalObj, setPracticalObj] = useState([])
     const [optionalObj, setOptionalObj] = useState([])
+    const [CSVData, setCSVData] = useState([])
     const [fetch, setFetch] = useState(false)
 
 
@@ -50,6 +55,42 @@ function AllocateTeachers() {
         }
     }, [])
 
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+            const { data } = await parseCsv(file);
+            console.log('CSV Data:', data);
+            setCSVData(data);
+        }
+    };
+
+    const parseCsv = (file) => {
+        return new Promise((resolve, reject) => {
+            Papa.parse(file, {
+                complete: (result) => {
+                    resolve(result);
+                },
+                error: (error) => {
+                    reject(error.message);
+                },
+                header: true, // Set to false if your CSV doesn't have headers
+            });
+        });
+    };
+
+
+    const submitToFirebase = async () => {
+        try {
+            for (const dataItem of CSVData) {
+                await addDoc(collection(db, 'csv'), dataItem);
+            }
+            alert('Data uploaded successfully!');
+        } catch (error) {
+            alert(error);
+        }
+    }
 
     const departmentList = [
         "Electronics & Telecommunication",
@@ -79,7 +120,7 @@ function AllocateTeachers() {
         "Theoretical Computer Science",
         "Internet Programming",
         "Probablistic Graphical Models",
-        "Professional Communication Ethics"
+        "Professional Communication Ethics",
     ]
     const divisionList = [
         "C",
@@ -249,7 +290,7 @@ function AllocateTeachers() {
             setFetch(false);
         } catch (error) {
             notifyError('Something went wrong');
-            
+
         }
     }
     async function createPracticalAllocation() {
@@ -444,7 +485,7 @@ function AllocateTeachers() {
 
 
                             <div
-                                onClick={modeOption === "Theory" ? createTheoryAllocation : '' || modeOption === "Practical" ? createPracticalAllocation : '' ||  modeOption === "optionalSubject" ? createOptionalAllocation : ''}
+                                onClick={modeOption === "Theory" ? createTheoryAllocation : '' || modeOption === "Practical" ? createPracticalAllocation : '' || modeOption === "optionalSubject" ? createOptionalAllocation : ''}
                                 type="submit" class=" cursor-pointer w-96 relative inline-flex items-center px-12 py-2 overflow-hidden text-lg font-medium text-black border-2 border-black rounded-full hover:text-white group hover:bg-gray-600">
                                 <span class="absolute left-0 block w-full h-0 transition-all bg-black opacity-100 group-hover:h-full top-1/2 group-hover:top-0 duration-400 ease"></span>
                                 <span class="absolute right-0 flex items-center justify-start w-10 h-10 duration-300 transform translate-x-full group-hover:translate-x-0 ease">
@@ -459,11 +500,48 @@ function AllocateTeachers() {
                     <SubjectAllocation theoryObj={theoryObj} practicalObj={practicalObj} optionalObj={optionalObj} />
 
 
+                    <div className='flex flex-col justify-start space-y-10 '>
+                        <h1 className={`${raleway.className} text-3xl font-bold mt-10`}>Upload CSV</h1>
+                        <input type="file" accept=".csv" onChange={handleFileUpload} />
 
+
+                        {/* <div class="flex items-center justify-center w-full">
+                            <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+                                    </svg>
+                                    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                                </div>
+                                <input id="dropzone-file" type="file" class="hidden" />
+                            </label>
+                        </div> */}
+
+
+                        {CSVData.map((student) => (
+                            <div key={student.id}>
+                                <h1>{student.department}</h1>
+                                <h1>{student.teacher}</h1>
+                                <h1>{student.division}</h1>
+                                <h1>{student.semester}</h1>
+                                <h1>{student.subject}</h1>
+                            </div>
+
+                        ))}
+                        <button onClick={submitToFirebase}>Submit</button>
+
+                        <CsvExport data={theoryObj} fileName="exported_data.csv" />
+
+                    </div>
 
                 </div>
 
+
             </div>
+
+
+
         </>
 
     )

@@ -235,15 +235,9 @@ function Login() {
                             
                             }
                             </div> */}
-
-
-
                         </section>
-
-
                     </div>
                     <div className='flex flex-col justify-start space-y-5 '>
-
                         <h1 className={`${manrope.className} md:text-xl text-md`}>Select your Role</h1>
                         <div className='flex justify-center items-center '>
                             <select

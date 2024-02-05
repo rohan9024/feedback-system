@@ -35,3 +35,8 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+
+// email mein .sies.edu.in ka verification on signup
+// sem vise subjects
+
