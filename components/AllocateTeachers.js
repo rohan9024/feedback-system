@@ -13,7 +13,7 @@ import SubjectAllocation from "./SubjectAllocation"
 import { motion } from "framer-motion"
 import { useQuery } from 'react-query';
 import Papa from 'papaparse';
-import CsvExport from "../CSVExport"
+import CsvExport from "../CsvExport"
 
 const raleway = Raleway({
     weight: ['400', '700'],
