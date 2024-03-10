@@ -88,7 +88,6 @@ function Feedback({ fullName, feedbackName, PRN, feedbackId }) {
 
     return (
         <>
-
             <ToastContainer
                 position="top-right"
                 autoClose={2000}
@@ -102,10 +101,10 @@ function Feedback({ fullName, feedbackName, PRN, feedbackId }) {
                 theme="light"
             />
             <div>
-                <header className={`${manrope.className} bg-purple-600 p-4 text-white text-center py-10 space-y-10`}>
+                <header className={`${manrope.className} bg-gray-900 p-4 text-white text-center py-10 space-y-10`}>
                     <h1 className='text-4xl font-bold'>{feedbackName}</h1>
                     <h1 className='text-xl'>Welcome, {fullName} !</h1>
-                    <h1 className='text-xl'>Your PRN Number is: {PRN} !</h1>
+                    <h1 className='text-xl'>PRN: {PRN} </h1>
                 </header>
             </div>
 

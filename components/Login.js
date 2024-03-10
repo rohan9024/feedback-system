@@ -34,9 +34,6 @@ function Login() {
         "Admin",
     ];
 
-
-
-
     const handleDropdown = (event) => {
         setUser(event.target.value);
     };
@@ -98,7 +95,7 @@ function Login() {
         if (email && password) {
             const q = query(
                 collection(db, "users"),
-                where("email", "==", email),
+                where("email", "==", email.toLowerCase()),
                 where("password", "==", password)
             );
 

@@ -82,13 +82,6 @@ function page() {
             fetchUser();
         }
     }, [fetch, db, userEmail]);
-    
-
-
-
-
-
-
 
     return (
 

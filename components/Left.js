@@ -42,6 +42,9 @@ function Left() {
                     <div className='mt-2 mr-4 hover:cursor-pointer' onClick={()=> router.push('/generate-feedback')}>
                         <img src="./feedback.png" alt="feedback" className='w-6 h-6 object-contain' />
                     </div>
+                    <div className='mt-2 mr-4 hover:cursor-pointer' onClick={()=> router.push('/generate-feedback')}>
+                        <img src="./user.png" alt="user" className='w-6 h-6 object-contain' />
+                    </div>
                     <div className='mt-2 mr-4 hover:cursor-pointer'>
                         <img src="./settings.png" alt="Settings" className='w-6 h-6 object-contain' />
                     </div>
@@ -64,6 +67,11 @@ function Left() {
                     <Link href="/generate-feedback" >
                         <div className='hover:cursor-pointer'>
                             <h1>Generate Feedback</h1>
+                        </div>
+                    </Link>
+                    <Link href="/view-users" >
+                        <div className='hover:cursor-pointer'>
+                            <h1>View Users</h1>
                         </div>
                     </Link>
                     <Link href="/admin-settings" >

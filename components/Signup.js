@@ -8,7 +8,7 @@ import { Manrope } from 'next/font/google';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from 'next/navigation';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const raleway = Raleway({
@@ -26,13 +26,24 @@ function Signup() {
     const [fullName, setFullName] = useState("")
     const [department, setDepartment] = useState("Electronics & Telecommunication")
     const [optionalSubject, setOptionalSubject] = useState("")
-    const [semester, setSemester] = useState("")
-    const [division, setDivision] = useState("")
+    const [semester, setSemester] = useState("Semester 1")
+    const [division, setDivision] = useState("A")
     const [batch, setBatch] = useState("")
     const [password, setPassword] = useState("")
     const [year, setYear] = useState("FE")
     const router = useRouter();
 
+
+    const FEDivisionList = [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+    ]
     const departmentList = [
         "Electronics & Telecommunication",
         "Computer Engineering",
@@ -88,25 +99,29 @@ function Signup() {
         theme: "light",
     });
 
-    const signup = async (e) => {
-        e.preventDefault();
 
-        if (email && PRN && fullName && department && semester && division && batch && year && password) {
-            try {
+    async function CheckEmailExists(email) {
+        const q = query(collection(db, 'users'), where('email', '==', email.toLowerCase().trim()));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            alert("Email already exists");
+        } else {
+            if (email && PRN && fullName && department && semester && division && batch && year && password) {
                 await addDoc(collection(db, 'users'), {
                     fullName: fullName,
-                    email: email,
-                    PRN: PRN,
+                    email: email.toLowerCase().trim(),
+                    PRN: PRN.toUpperCase().trim(),
                     department: department,
                     semester: semester,
-                    division: division.toUpperCase(),
-                    batch: batch.toUpperCase(),
+                    division: division.toUpperCase().trim(),
+                    batch: batch.toUpperCase().trim(),
                     year: year,
                     password: password,
                     completed: "false",
                     optionalSubject: optionalSubject ? optionalSubject : ''
                 });
-                notifySuccess('Created User successfully');
+                alert('Created User successfully');
                 setFullName('');
                 setPRN('');
                 setEmail('');
@@ -117,14 +132,27 @@ function Signup() {
                 setYear('');
                 setPassword('');
                 router.push("/login")
-                setFetch(false);
-            } catch (error) {
-                notifyError('Something went wrong');
+            }
+            else {
+                alert("Please enter all details")
             }
         }
-        else {
-            alert("Please enter all details")
+
+    };
+
+    const signup = async (e) => {
+        e.preventDefault();
+
+        if (email.toLowerCase().includes('@gst.sies.edu.in')) {
+            CheckEmailExists(email.toLowerCase());
+
+            // alert(email.toLowerCase())
         }
+        else {
+            alert("Enter college id only");
+        }
+
+
 
     };
     const handleYearDropdown = (event) => {
@@ -241,33 +269,38 @@ function Signup() {
                                 </div>
                             </div>
                             <div className='flex flex-col space-y-5'>
-                                <h1 className={`${manrope.className} md:text-xl text-md `}>Enter Division</h1>
+                                <h1 className={`${manrope.className} md:text-xl text-md`}>Enter Division</h1>
                                 <input onChange={(e) => setDivision(e.target.value)} required type="text" placeholder="C" className={`${manrope.className} placeholder:text-gray-500 px-5 w-72 py-2  outline-none border border-gray-800 lg:w-96`} />
                             </div>
                             <div className='flex flex-col space-y-5'>
-                                <h1 className={`${manrope.className} md:text-xl text-md `}>Enter Batch</h1>
+                                <h1 className={`${manrope.className} md:text-xl text-md`}>Enter Batch</h1>
                                 <input onChange={(e) => setBatch(e.target.value)} required type="text" placeholder="C1" className={`${manrope.className} placeholder:text-gray-500 px-5 w-72 py-2  outline-none border border-gray-800 lg:w-96`} />
                             </div>
                             <div className='flex flex-col space-y-5'>
-                                <h1 className={`${manrope.className} md:text-xl text-md `}>Create a Password</h1>
+                                <h1 className={`${manrope.className} md:text-xl text-md`}>Create a Password</h1>
                                 <input onChange={(e) => setPassword(e.target.value)} required type="text" className={`${manrope.className} placeholder:text-gray-500 px-5 w-72 py-2  outline-none border border-gray-800 lg:w-96`} />
                             </div>
-                            <div className='flex flex-col justify-start space-y-5 '>
-                                <h1 className={`${manrope.className} md:text-xl text-md`}>Select Optional Subject</h1>
-                                <div className='flex justify-center items-center '>
-                                    <select
-                                        value={optionalSubject}
-                                        onChange={handleOptionalSubjectDropdown}
-                                        className="block w-52 lg:w-96 py-2 px-5 leading-tight border border-gray-700 focus:outline-none cursor-pointer"
-                                    >
-                                        {optionalSubjectList.map((subject, index) => (
-                                            <option key={index} value={subject}>
-                                                {subject}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
+                            {
+                                year == "TE" && (
+                                    <div className='flex flex-col justify-start space-y-5 '>
+                                        <h1 className={`${manrope.className} md:text-xl text-md`}>Select Optional Subject</h1>
+                                        <div className='flex justify-center items-center '>
+                                            <select
+                                                value={optionalSubject}
+                                                onChange={handleOptionalSubjectDropdown}
+                                                className="block w-52 lg:w-96 py-2 px-5 leading-tight border border-gray-700 focus:outline-none cursor-pointer"
+                                            >
+                                                {optionalSubjectList.map((subject, index) => (
+                                                    <option key={index} value={subject}>
+                                                        {subject}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                )
+                            }
+
                         </section>
 
 

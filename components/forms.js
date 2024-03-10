@@ -1,10 +1,14 @@
-import { collection, doc, getDocs, increment, query, updateDoc, where } from 'firebase/firestore';
+
+import { collection, doc, getDocs, increment, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Manrope, Raleway } from 'next/font/google';
 import { useRouter } from 'next/navigation';
+import RSS from "react-secure-storage";
+import { flushSync } from "react-dom"
+
 
 const raleway = Raleway({
   weight: ['400', '700'],
@@ -26,7 +30,10 @@ const Forms = ({ feedbackId, user }) => {
   const [totalSubjectCount, setTotalSubjectCount] = useState(0);
   const [submissionTrack, setSubmissionTrack] = useState(0);
   const [submissionStatus, setSubmissionStatus] = useState({});
-  const [practicalSubmissionStatus, setPracticalSubmissionStatus] = useState({});
+  const [practicalSubmissionStatus, setPracticalSubmissionStatus] = useState({})
+  const [optionalSubmissionStatus, setOptionalSubmissionStatus] = useState({})
+  const [totalCount, setTotalCount] = useState(0)
+
   var subjectCount = 1;
   var isUser = ''
   var userEmail = ''
@@ -48,6 +55,52 @@ const Forms = ({ feedbackId, user }) => {
   }, [])
 
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedSubmissionStatus = JSON.parse(localStorage.getItem('ss')) || {};
+      const storedPracticalSubmissionStatus = JSON.parse(localStorage.getItem('ps')) || {};
+      const storedOptionalSubmissionStatus = JSON.parse(localStorage.getItem('os')) || {};
+      const storedTotalCount = localStorage.getItem('c') || 0;
+
+      setSubmissionStatus(storedSubmissionStatus);
+      setPracticalSubmissionStatus(storedPracticalSubmissionStatus);
+      setOptionalSubmissionStatus(storedOptionalSubmissionStatus);
+      setTotalCount(storedTotalCount);
+    }
+  }, []);
+
+  const updateSubmissionStatus = (subject) => {
+    const updatedStatus = { ...submissionStatus, [subject]: true };
+    setSubmissionStatus(updatedStatus);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ss', JSON.stringify(updatedStatus));
+    }
+  };
+
+  const updatePracticalSubmissionStatus = (subject) => {
+    const updatedPracticalStatus = { ...practicalSubmissionStatus, [subject]: true };
+    setPracticalSubmissionStatus(updatedPracticalStatus);
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ps', JSON.stringify(updatedPracticalStatus));
+    }
+  };
+
+  const updateOptionalSubmissionStatus = (subject) => {
+    const updatedOptionalStatus = { ...optionalSubmissionStatus, [subject]: true };
+    setOptionalSubmissionStatus(updatedOptionalStatus);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('os', JSON.stringify(updatedOptionalStatus));
+    }
+  };
+  const updateTotalCount = (count) => {
+    flushSync(() => {
+      setTotalCount((prevCount) => prevCount + count);
+    })
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('c', totalCount);
+    }
+  };
 
   const notifySuccess = () => toast.success('Submitted successfully', {
     position: "top-right",
@@ -76,12 +129,8 @@ const Forms = ({ feedbackId, user }) => {
     'Was the teacher well-prepared for the class?',
     'Did the teacher encourage questions and discussions?',
     'Rate the teacher\'s clarity in communication.',
-    'How engaging were the class activities?',
-    'Rate the teacher\'s availability for extra help.',
     'Did the teacher provide useful feedback on assignments?',
-    'Rate the teacher\'s approachability.',
-    'How satisfied are you with the overall teaching quality?',
-    'Would you recommend this teacher to others?',
+
   ];
 
   const TE_CE_5 = [
@@ -96,6 +145,26 @@ const Forms = ({ feedbackId, user }) => {
     const docRef = doc(db, "feedbacks", feedbackId);
     const docRef2 = doc(db, "users", user.id);
 
+
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('os');
+        localStorage.removeItem('ss');
+        localStorage.removeItem('ps');
+        localStorage.removeItem('c');
+      }
+      const updateUser = async () => {
+        const docRef = doc(db, "users", user.id);
+        await updateDoc(docRef, {
+          completed: "true",
+          count: totalCount
+        });
+      };
+
+
+    } catch (error) {
+      alert(error);
+    }
     try {
       await updateDoc(docRef, {
         completed: increment(1),
@@ -110,7 +179,7 @@ const Forms = ({ feedbackId, user }) => {
         completed: "true",
       });
 
-      notifySuccess('Submitted Feedback successfully');
+      alert('Submitted Feedback successfully');
       router.push('/homepage');
     } catch (error) {
       console.log(error);
@@ -139,107 +208,145 @@ const Forms = ({ feedbackId, user }) => {
 
   async function updateTheorySubject(one, two, three, four, five, subject) {
 
-    const q = query(
-      collection(db, "details"),
-      where("subject", "==", subject),
-      where("department", "==", user.department),
-      where("mode", "==", "Theory")
-    );
 
-    const querySnapshot = await getDocs(q);
+    if (one + two + three + four + five === 5) {
+      const q = query(
+        collection(db, "details"),
+        where("subject", "==", subject),
+        where("department", "==", user.department),
+        where("mode", "==", "Theory")
+      );
 
-    if (querySnapshot.empty) {
-      notifyError();
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        notifyError();
+      } else {
+        const docRef = doc(db, "details", querySnapshot.docs[0].id);
+        // const docRef2 = doc(db, "users", user.id);
+
+        await updateDoc(docRef, {
+          one: increment(one),
+          two: increment(two),
+          three: increment(three),
+          four: increment(four),
+          five: increment(five),
+        });
+        // await updateDoc(docRef2, {
+        //   count: totalCount
+        // });
+
+        flushSync(() => {
+          setOne(0);
+          setTwo(0);
+          setThree(0);
+          setFour(0);
+          setFive(0);
+        })
+
+        setSubmissionTrack((count) => count + 1);
+        updateSubmissionStatus(subject);
+        updateTotalCount(1);
+        notifySuccess();
+        console.log(one, two, three, four, five, subject)
+      }
     } else {
-      const docRef = doc(db, "details", querySnapshot.docs[0].id);
-
-      await updateDoc(docRef, {
-        one: increment(one),
-        two: increment(two),
-        three: increment(three),
-        four: increment(four),
-        five: increment(five),
-      });
-      setOne(0)
-      setTwo(0)
-      setThree(0)
-      setFour(0)
-      setFive(0)
-      setSubmissionStatus((prevStatus) => ({ ...prevStatus, [subject]: true }));
-      setSubmissionTrack((count) => count + 1)
-      notifySuccess();
-
+      alert("Please provide ratings for all questions.");
+      console.log("Not done", one, two, three, four, five, subject);
     }
   }
+
+
   async function updatePracticalSubject(one, two, three, four, five, subject) {
 
-    const q = query(
-      collection(db, "details"),
-      where("subject", "==", subject),
-      where("department", "==", user.department),
-      where("mode", "==", "Practical")
-    );
+    if (one + two + three + four + five === 5) {
 
-    const querySnapshot = await getDocs(q);
+      const q = query(
+        collection(db, "details"),
+        where("subject", "==", subject),
+        where("department", "==", user.department),
+        where("mode", "==", "Practical")
+      );
 
-    if (querySnapshot.empty) {
-      notifyError();
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        notifyError();
+      } else {
+        const docRef = doc(db, "details", querySnapshot.docs[0].id);
+
+        await updateDoc(docRef, {
+          one: increment(one),
+          two: increment(two),
+          three: increment(three),
+          four: increment(four),
+          five: increment(five),
+        });
+
+        flushSync(() => {
+          setOne(0);
+          setTwo(0);
+          setThree(0);
+          setFour(0);
+          setFive(0);
+        })
+        setSubmissionTrack((count) => count + 1)
+        updatePracticalSubmissionStatus(subject);
+        updateTotalCount(1);
+        notifySuccess();
+        console.log(one, two, three, four, five, subject);
+
+      }
     } else {
-      const docRef = doc(db, "details", querySnapshot.docs[0].id);
-
-      await updateDoc(docRef, {
-        one: increment(one),
-        two: increment(two),
-        three: increment(three),
-        four: increment(four),
-        five: increment(five),
-      });
-      setOne(0)
-      setTwo(0)
-      setThree(0)
-      setFour(0)
-      setFive(0)
-      setPracticalSubmissionStatus((prevStatus) => ({ ...prevStatus, [subject]: true }));
-      setSubmissionTrack((count) => count + 1)
-
-      notifySuccess();
-
+      console.log("Not done", one, two, three, four, five, subject);
+      alert("Please provide ratings for all questions.");
     }
   }
   async function updateOptionalSubject(one, two, three, four, five, subject) {
+ 
+    if (one + two + three + four + five === 5) {
 
-    const q = query(
-      collection(db, "optionalSubjects"),
-      where("subject", "==", subject),
-      where("department", "==", user.department),
-    );
+      const q = query(
+        collection(db, "optionalSubjects"),
+        where("subject", "==", subject),
+        where("department", "==", user.department),
+      );
 
-    const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(q);
 
-    if (querySnapshot.empty) {
-      notifyError();
-    } else {
-      const docRef = doc(db, "optionalSubjects", querySnapshot.docs[0].id);
+      if (querySnapshot.empty) {
+        notifyError();
+      } else {
+        const docRef = doc(db, "optionalSubjects", querySnapshot.docs[0].id);
 
-      await updateDoc(docRef, {
-        one: increment(one),
-        two: increment(two),
-        three: increment(three),
-        four: increment(four),
-        five: increment(five),
-      });
-      setOne(0)
-      setTwo(0)
-      setThree(0)
-      setFour(0)
-      setFive(0)
+        await updateDoc(docRef, {
+          one: increment(one),
+          two: increment(two),
+          three: increment(three),
+          four: increment(four),
+          five: increment(five),
+        });
 
-      setSubmissionStatus((prevStatus) => ({ ...prevStatus, [subject]: true }));
-      setSubmissionTrack((count) => count + 1)
+        flushSync(() => {
+          setOne(0);
+          setTwo(0);
+          setThree(0);
+          setFour(0);
+          setFive(0);
+        })
+        setSubmissionTrack((count) => count + 1)
+        updateOptionalSubmissionStatus(subject);
+        updateTotalCount(1);
+        notifySuccess();
+        console.log(one, two, three, four, five, subject);
 
-      notifySuccess();
-
+      }
     }
+    else {
+      console.log("Not done", one, two, three, four, five, subject);
+      alert("Please provide ratings for all questions.");
+    }
+
   }
 
   useEffect(() => {
@@ -398,9 +505,8 @@ const Forms = ({ feedbackId, user }) => {
         theme="light"
       />
 
-
-      <div className={`${manrope.className} flex items-center justify-center min-h-screen bg-gray-100 py-20`}>
-        <div className="bg-white p-8 rounded shadow-md w-full max-w-4xl">
+      <div className={`${manrope.className} flex items-center justify-center min-h-screen bg-[#F8F7F2] py-20`}>
+        <div className="bg-[#F8F7F2] p-8 rounded-lg border shadow-lg w-full max-w-4xl">
           <div className="text-center mb-8">
             <img
               src="https://siesgst.edu.in/images/sies_gst_logo.jpg"
@@ -413,7 +519,6 @@ const Forms = ({ feedbackId, user }) => {
             theoryTeachersObj.map((teacher, index) => (
               (
                 <>
-
                   <h1 className='font-semibold flex'><h1 className='mr-3'>{subjectCount++}.</h1>{teacher.subject}</h1>
                   <h1 className='font-semibold'>Teacher: {teacher.teacher}</h1>
                   <table className="w-full mt-4">
@@ -432,7 +537,6 @@ const Forms = ({ feedbackId, user }) => {
                                 </React.Fragment>
                               ))}
                             </div>
-
                           </td>
                         </tr>
                       ))}
@@ -449,7 +553,10 @@ const Forms = ({ feedbackId, user }) => {
                     </button>
                   </div>
                 </>
-              )))
+              ))
+
+
+            )
           }
 
           <h2 className="text-3xl font-bold my-10 text-center">Practical Subjects</h2>
@@ -536,10 +643,8 @@ const Forms = ({ feedbackId, user }) => {
               )))
           }
 
-
-
           {
-            submissionTrack === subjectCount - 1 && (
+            totalCount == 10 && (
               <div className='flex justify-center items-center'>
                 <div
                   onClick={updateFeedback}

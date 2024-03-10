@@ -39,6 +39,7 @@ const StudentNavbar = ({ userObj }) => {
 
         if (typeof window !== 'undefined') {
           localStorage.setItem("isUser", "false") || ''
+          localStorage.removeItem("email") 
         }
 
         router.push('login');

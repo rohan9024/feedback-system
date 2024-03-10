@@ -55,27 +55,27 @@ function StudentDashboard({ userObj }) {
     }
   }, [fetch]);
 
-  async function registerUser() {
-    try {
-        const updateUser = userObj.map(async (user) => {
-            const docRef = doc(db, "users", user.id);
-            await updateDoc(docRef, {
-                completed: "true",
-            });
-        });
+  //   async function registerUser() {
+  //     try {
+  //         const updateUser = userObj.map(async (user) => {
+  //             const docRef = doc(db, "users", user.id);
+  //             await updateDoc(docRef, {
+  //                 completed: "true",
+  //             });
+  //         });
 
-        await Promise.all(updateUser);
+  //         await Promise.all(updateUser);
 
-    } catch (error) {
-        alert(error);
-    }
-}
+  //     } catch (error) {
+  //         alert(error);
+  //     }
+  // }
 
 
   return (
     <div className={`${manrope.className} `}>
 
-      <header className="bg-purple-400 p-4 text-white text-center">
+      <header className="bg-gray-800 p-4 text-white text-center">
         {
           userObj.map((user) => (
             <h1 className='text-2xl'>Welcome, {user.fullName} !</h1>
@@ -88,10 +88,9 @@ function StudentDashboard({ userObj }) {
           {
             feedbackObj.map((feedback) => (
               userObj.map((user) => (
-                user.completed === "false" ? (<div className="card total-feedback bg-purple-400 border border-gray-300 p-12 text-center rounded">
+                user.completed === "false" ? (<div className="card total-feedback bg-gray-800 text-white border border-gray-300 p-12 text-center rounded">
                   <Link
                     key={feedback}
-                    onClick={registerUser}
                     href={{
                       pathname: `/homepage/${feedback.name}`,
                       query: { feedbackId: feedback.id, feedback: feedback.name, fullName: user.fullName, PRN: user.PRN, department: user.department },

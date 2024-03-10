@@ -30,8 +30,6 @@ function GenerateFeedback() {
     const [modeOption, setModeOption] = useState("Theory")
     const router = useRouter();
 
-
-
     const [generateFeedbackModal, setGenerateFeedbackModal] = useState(false)
 
 
