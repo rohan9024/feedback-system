@@ -6,7 +6,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Manrope, Raleway } from 'next/font/google';
 import { useRouter } from 'next/navigation';
-import { flushSync } from "react-dom"
 
 
 const raleway = Raleway({
@@ -93,9 +92,7 @@ const Forms = ({ feedbackId, user }) => {
     }
   };
   const updateTotalCount = (count) => {
-    flushSync(() => {
-      setTotalCount((prevCount) => prevCount + count);
-    })
+    setTotalCount((prevCount) => prevCount + count);
     if (typeof window !== 'undefined') {
       localStorage.setItem('c', totalCount);
     }
@@ -139,7 +136,7 @@ const Forms = ({ feedbackId, user }) => {
     "Theoretical Computer Science",
     "PCE",
   ]
- 
+
 
 
   async function updateFeedback() {
@@ -237,13 +234,11 @@ const Forms = ({ feedbackId, user }) => {
         //   count: totalCount
         // });
 
-        flushSync(() => {
-          setOne(0);
-          setTwo(0);
-          setThree(0);
-          setFour(0);
-          setFive(0);
-        })
+        setOne(0);
+        setTwo(0);
+        setThree(0);
+        setFour(0);
+        setFive(0);
 
         setSubmissionTrack((count) => count + 1);
         updateSubmissionStatus(subject);
@@ -284,13 +279,11 @@ const Forms = ({ feedbackId, user }) => {
           five: increment(five),
         });
 
-        flushSync(() => {
-          setOne(0);
-          setTwo(0);
-          setThree(0);
-          setFour(0);
-          setFive(0);
-        })
+        setOne(0);
+        setTwo(0);
+        setThree(0);
+        setFour(0);
+        setFive(0);
         setSubmissionTrack((count) => count + 1)
         updatePracticalSubmissionStatus(subject);
         updateTotalCount(1);
@@ -304,7 +297,7 @@ const Forms = ({ feedbackId, user }) => {
     }
   }
   async function updateOptionalSubject(one, two, three, four, five, subject) {
- 
+
     if (one + two + three + four + five === 5) {
 
       const q = query(
@@ -328,13 +321,11 @@ const Forms = ({ feedbackId, user }) => {
           five: increment(five),
         });
 
-        flushSync(() => {
-          setOne(0);
-          setTwo(0);
-          setThree(0);
-          setFour(0);
-          setFive(0);
-        })
+        setOne(0);
+        setTwo(0);
+        setThree(0);
+        setFour(0);
+        setFive(0);
         setSubmissionTrack((count) => count + 1)
         updateOptionalSubmissionStatus(subject);
         updateTotalCount(1);
