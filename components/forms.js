@@ -6,7 +6,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Manrope, Raleway } from 'next/font/google';
 import { useRouter } from 'next/navigation';
-import RSS from "react-secure-storage";
 import { flushSync } from "react-dom"
 
 
